@@ -18,12 +18,14 @@ def do_add(user_action):
     todos = functions.get_todos()
     todos.append(todo)
     functions.write_todos(todos)
+    return True
 
-def do_show():
+def do_show(user_action):
     todos = functions.get_todos()
     for index, item in enumerate(todos):
         row = f"{index + 1} -- {item.strip('\n')}"
         print(row)
+    return True
 
 def do_edit(user_action):
     """
@@ -37,6 +39,7 @@ def do_edit(user_action):
     new_todo = input("Enter new todo: ")
     todos[number] = new_todo + "\n"
     functions.write_todos(todos)
+    return True
 
 def do_complete(user_action):
     number = int(user_action[9:]) - 1
@@ -49,51 +52,52 @@ def do_complete(user_action):
 
     message = f"\tТудушка \"{completed_todo.strip('\n')}\" була успішно виконана!"
     print(message)
+    return True
+
+def do_exit(user_action):
+    return False
+
+# Таблиця команд (Command Dispatcher Table)
+COMMANDS = {
+    "add": do_add,
+    "show": do_show,
+    "edit": do_edit,
+    "complete": do_complete,
+    "exit": do_exit,
+}
 
 def dispatch(user_action):
     """
-    Виконує одну команду.
-
-    Повертає:
-        True  — продовжувати REPL
-        False — вийти (exit)
+        Dictionary Dispatcher:
+        - беремо перше слово як "команду"
+        - знаходимо обробник у COMMANDS
+        - викликаємо його
     """
+
     user_action = user_action.strip()
-    command = user_action.lower()
-
-    if command.startswith('add'):
-        do_add(user_action)
-        success()
+    if not user_action:
+        print("invalid input")
         return True
 
-    if command.startswith('show'):
-        do_show()
-        success()
+    cmd = user_action.split(maxsplit=1)[0].lower()
+    handler = COMMANDS.get(cmd)
+
+    if handler is None:
+        print("invalid input")
         return True
 
-    if command.startswith('edit'):
-        try:
-            do_edit(user_action)
+    try:
+        should_continue = handler(user_action)
+        if should_continue:
             success()
-        except ValueError:
-            print("Ваша команда не зовсім зрозуміла")
-        except IndexError:
-            print("Не вірний номер тудушки")
+        return should_continue
+
+    except ValueError:
+        print("Ваша команда не зовсім зрозуміла")
         return True
-
-    if command.startswith('complete'):
-        try:
-            do_complete(user_action)
-            success()
-        except IndexError:
-            print("Не вірний номер тудушки")
+    except IndexError:
+        print("Не вірний номер тудушки")
         return True
-
-    if command.startswith('exit'):
-        return False
-
-    print('invalid input')
-    return True
 
 def repl():
     now = time.strftime("%b %d, %Y %H:%M:%S")
