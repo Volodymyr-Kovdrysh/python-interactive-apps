@@ -10,6 +10,9 @@ if not os.path.exists(todos_path):
     with open(todos_path, "w", encoding='utf-8') as f:
         pass
 
+def success():
+    print("Успішне виконання команди")
+
 def do_add(user_action):
     todo = user_action[4:] + "\n"
     todos = functions.get_todos()
@@ -56,36 +59,37 @@ def dispatch(user_action):
         False — вийти (exit)
     """
     user_action = user_action.strip()
+    command = user_action.lower()
 
-    if user_action.lower().startswith('add'):
+    if command.startswith('add'):
         do_add(user_action)
-        print(' Успішне виконня команди')
+        success()
         return True
 
-    if user_action.lower().startswith('show'):
+    if command.startswith('show'):
         do_show()
-        print(' Успішне виконня команди')
+        success()
         return True
 
-    if user_action.lower().startswith('edit'):
+    if command.startswith('edit'):
         try:
             do_edit(user_action)
-            print(' Успішне виконня команди')
+            success()
         except ValueError:
             print("Ваша команда не зовсім зрозуміла")
         except IndexError:
             print("Не вірний номер тудушки")
         return True
 
-    if user_action.lower().startswith('complete'):
+    if command.startswith('complete'):
         try:
             do_complete(user_action)
-            print(' Успішне виконня команди')
+            success()
         except IndexError:
             print("Не вірний номер тудушки")
         return True
 
-    if user_action.lower().startswith('exit'):
+    if command.startswith('exit'):
         return False
 
     print('invalid input')
