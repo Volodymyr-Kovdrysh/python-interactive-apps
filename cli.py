@@ -1,7 +1,9 @@
 # from functions import get_todos, write_todos
+import argparse
 import time
 import functions
 import os
+import sys
 
 os.makedirs("data", exist_ok=True)
 todos_path = os.path.join("data", "todos.txt")
@@ -109,9 +111,69 @@ def repl():
 
     print("Babay!")
 
-def main():
-    repl()
 
+def build_parser():
+    parser = argparse.ArgumentParser(
+        prog="todo",
+        description="Todo: REPL (без аргументів) або CLI-команда (через argparse).",
+    )
+
+    sub = parser.add_subparsers(dest="command")
+
+    p_add = sub.add_parser("add", help="Додати тудушку")
+    p_add.add_argument("text", nargs="+", help="Текст тудушки (можна без лапок)")
+    p_add.set_defaults(command="add")
+
+    p_show = sub.add_parser("show", help="Показати список")
+    p_show.set_defaults(command="show")
+
+    p_edit = sub.add_parser("edit", help="Редагувати тудушку (номер)")
+    p_edit.add_argument("number", type=int, help="Номер тудушки (1..n)")
+    p_edit.set_defaults(command="edit")
+
+    p_complete = sub.add_parser("complete", help="Позначити виконаною (номер)")
+    p_complete.add_argument("number", type=int, help="Номер тудушки (1..n)")
+    p_complete.set_defaults(command="complete")
+
+    p_repl = sub.add_parser("repl", help="Запустити REPL явно")
+    p_repl.set_defaults(command="repl")
+
+    return parser
+
+def run_from_args(args):
+    """
+    Перетворюємо argparse-аргументи у той самий формат рядка,
+    який очікує dispatch() і do_* (backward-compatible).
+    """
+    if args.command == "add":
+        text = " ".join(args.text)
+        return dispatch(f"add {text}")
+
+    if args.command == "show":
+        return dispatch("show")
+
+    if args.command == "edit":
+        # зберігаємо стару поведінку: новий текст береться через input() всередині do_edit
+        return dispatch(f"edit {args.number}")
+
+    if args.command == "complete":
+        return dispatch(f"complete {args.number}")
+
+    if args.command == "repl":
+        repl()
+        return True
+
+    # якщо command None (не передали жодної підкоманди)
+    repl()
+    return True
+
+def main():
+    if len(sys.argv) == 1:
+        repl()
+        return
+    parser = build_parser()
+    args = parser.parse_args()
+    run_from_args(args)
 
 
 if __name__ == '__main__':
