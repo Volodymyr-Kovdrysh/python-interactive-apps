@@ -4,6 +4,7 @@ import time
 import functions
 import os
 import sys
+import click
 
 os.makedirs("data", exist_ok=True)
 todos_path = os.path.join("data", "todos.txt")
@@ -152,10 +153,46 @@ def run_from_args(args):
     elif args.command == "repl":
         repl()
 
+
+
+@click.group(help="Todo CLI через click (альтернатива argparse).")
+def click_cli():
+    pass
+
+@click_cli.command("add")
+@click.argument("text", nargs=-1)  # дозволяє писати без лапок: add Buy milk
+def click_add(text):
+    dispatch("add " + " ".join(text))
+
+@click_cli.command("show")
+def click_show():
+    dispatch("show")
+
+@click_cli.command("edit")
+@click.argument("number", type=int)
+def click_edit(number):
+    dispatch(f"edit {number}")
+
+@click_cli.command("complete")
+@click.argument("number", type=int)
+def click_complete(number):
+    dispatch(f"complete {number}")
+
+@click_cli.command("repl")
+def click_repl():
+    repl()
+
 def main():
     if len(sys.argv) == 1:
         repl()
         return
+
+    if sys.argv[1] == "click":
+        # click очікує sys.argv як для програми, тож "з’їдаємо" слово click
+        sys.argv = [sys.argv[0]] + sys.argv[2:]
+        click_cli()
+        return
+
     parser = build_parser()
     args = parser.parse_args()
     run_from_args(args)
