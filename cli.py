@@ -47,38 +47,57 @@ def do_complete(user_action):
     message = f"\tТудушка \"{completed_todo.strip('\n')}\" була успішно виконана!"
     print(message)
 
+def dispatch(user_action):
+    """
+    Виконує одну команду.
+
+    Повертає:
+        True  — продовжувати REPL
+        False — вийти (exit)
+    """
+    user_action = user_action.strip()
+
+    if user_action.lower().startswith('add'):
+        do_add(user_action)
+        print(' Успішне виконня команди')
+        return True
+
+    if user_action.lower().startswith('show'):
+        do_show()
+        print(' Успішне виконня команди')
+        return True
+
+    if user_action.lower().startswith('edit'):
+        try:
+            do_edit(user_action)
+            print(' Успішне виконня команди')
+        except ValueError:
+            print("Ваша команда не зовсім зрозуміла")
+        except IndexError:
+            print("Не вірний номер тудушки")
+        return True
+
+    if user_action.lower().startswith('complete'):
+        try:
+            do_complete(user_action)
+            print(' Успішне виконня команди')
+        except IndexError:
+            print("Не вірний номер тудушки")
+        return True
+
+    if user_action.lower().startswith('exit'):
+        return False
+
+    print('invalid input')
+    return True
+
 def repl():
     now = time.strftime("%b %d, %Y %H:%M:%S")
     print(now)
     while True:
         user_action = input("Type add, show, edit, complete or exit: ")
-        user_action = user_action.strip()
-
-        if user_action.lower().startswith('add'):
-            do_add(user_action)
-        elif user_action.lower().startswith('show'):
-            do_show()
-        elif user_action.lower().startswith('edit'):
-            try:
-                do_edit(user_action)
-            except ValueError:
-                print("Ваша команда не зовсім зрозуміла")
-                continue
-            except IndexError:
-                print("Не вірний номер тудушки")
-                continue
-        elif user_action.lower().startswith('complete'):
-            try:
-                do_complete(user_action)
-            except IndexError:
-                print("Не вірний номер тудушки")
-                continue
-        elif user_action.lower().startswith('exit'):
+        if not dispatch(user_action):
             break
-        else:
-            print('invalid input')
-
-        print( ' Успішне виконня команди')
 
     print("Babay!")
 
